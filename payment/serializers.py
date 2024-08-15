@@ -36,6 +36,7 @@ class CardSerializer(serializers.Serializer):
 class SubscriptionInSerializer(serializers.Serializer):
     card = CardSerializer(required=False)
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    email = serializers.EmailField()
     plan = serializers.PrimaryKeyRelatedField(queryset=Plan.objects.all())
     number_of_cameras = serializers.IntegerField(default=1)
     payment_method = serializers.CharField(max_length=11)
@@ -50,6 +51,22 @@ class SubscriptionInSerializer(serializers.Serializer):
             if not value:
                 raise serializers.ValidationError("Card details are required")
         return value
+
+    def validate(self, data):
+        if data["payment_method"].upper() == "PAYPAL" and "email" not in data:
+            raise serializers.ValidationError("Email is required for PayPal payments")
+        if data["payment_method"].upper() == "CREDIT_CARD" and "card" not in data:
+            raise serializers.ValidationError(
+                "Card details are required for credit card payments"
+            )
+
+        if data["payment_method"].upper() == "PAYPAL":
+            if "card" in data:
+                del data["card"]
+        if data["payment_method"].upper() == "CREDIT_CARD":
+            if "payment_method" in data:
+                del data["payment_method"]
+        return data
 
 
 class SubscriptionOutSerializer(serializers.ModelSerializer):

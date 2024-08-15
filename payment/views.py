@@ -41,6 +41,7 @@ class SubscriptionView(generics.GenericAPIView):
         validated_data = serializer.validated_data
 
         user = validated_data["user"]
+        email = validated_data.get("email")
         plan = validated_data["plan"]
         card = validated_data.get("card")
         number_of_cameras = validated_data["number_of_cameras"]
@@ -57,6 +58,7 @@ class SubscriptionView(generics.GenericAPIView):
             paypal_subscription_id, approval_url = self._process_payment(
                 user,
                 plan,
+                email,
                 card,
                 number_of_cameras,
                 payment_method,
@@ -114,6 +116,7 @@ class SubscriptionView(generics.GenericAPIView):
         self,
         user: User,
         plan: Plan,
+        email,
         card,
         number_of_cameras,
         payment_method,
@@ -123,7 +126,7 @@ class SubscriptionView(generics.GenericAPIView):
         subscriber = {
             "given_name": user.full_name.split(" ")[0],
             "surname": user.full_name.split(" ")[1],
-            "email_address": user.email,
+            "email_address": email if email else user.email,
         }
 
         if payment_method.upper() == "CREDIT_CARD" and card:
