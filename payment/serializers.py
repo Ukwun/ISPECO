@@ -36,7 +36,7 @@ class CardSerializer(serializers.Serializer):
 class SubscriptionInSerializer(serializers.Serializer):
     card = CardSerializer(required=False)
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    email = serializers.EmailField()
+    email = serializers.EmailField(required=False)
     plan = serializers.PrimaryKeyRelatedField(queryset=Plan.objects.all())
     number_of_cameras = serializers.IntegerField(default=1)
     payment_method = serializers.CharField(max_length=11)
