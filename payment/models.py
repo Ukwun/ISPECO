@@ -118,46 +118,16 @@ class Plan(models.Model):
             super().save(*args, **kwargs)
 
 
-class Card(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=300)
-    number = models.CharField(max_length=19, unique=True)
-    security_code = models.CharField(max_length=4)
-    expiry_date = models.DateField()
-    state_province = models.CharField(max_length=300)
-    city_town = models.CharField(max_length=120)
-    postal_code = models.CharField(max_length=60)
-    country_code = models.CharField(
-        max_length=2, validators=[RegexValidator(r"^([A-Z]{2}|C2)$")]
-    )
-
-
 class Subscription(models.Model):
-    PAYMENT_METHOD_CHOICES = [
-        ("paypal", "PayPal"),
-        ("credit_card", "Credit Card"),
-    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
-    card = models.ForeignKey(Card, on_delete=models.SET_NULL, blank=True, null=True)
-    payer_email = models.EmailField(blank=True, null=True)
     number_of_cameras = models.IntegerField(default=1)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField()
-    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
     paypal_subscription_id = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.email} - {self.plan.name.title()} ({self.start_date})"
-
-
-class TemporarySubscriptionData(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
-    number_of_cameras = models.IntegerField(blank=True, null=True)
-    paypal_subscription_id = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Transaction(models.Model):

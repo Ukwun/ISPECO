@@ -3,11 +3,10 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import ProductAddForm, ProductAdminForm, PlanAddForm, PlanAdminForm
 
-from .models import Plan, Subscription, Transaction, Product, Card
+from .models import Plan, Subscription, Transaction, Product
 
 admin.site.register(Subscription)
 admin.site.register(Transaction)
-admin.site.register(Card)
 
 
 @admin.register(Product)
