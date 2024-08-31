@@ -7,7 +7,6 @@ from .models import Camera
 class CameraSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     stream_url = serializers.CharField(
-        write_only=True,
         validators=[URLValidator(schemes=["rtsp", "http", "https", "rtmp", "ftp"])],
     )
 
