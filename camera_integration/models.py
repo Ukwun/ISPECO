@@ -118,7 +118,10 @@ class Camera(models.Model):
             str: The decrypted password.
         """
         fernet = Fernet(settings.FERNET_KEY)
-        return fernet.decrypt(self.encrypted_password).decode()
+        encrypted_password = bytes(self.encrypted_password)
+        if not encrypted_password:
+            return ""
+        return fernet.decrypt(encrypted_password).decode()
 
     @password.setter
     def password(self, value: str) -> None:
@@ -143,7 +146,11 @@ class Camera(models.Model):
             str: The decrypted URL.
         """
         fernet = Fernet(settings.FERNET_KEY)
-        return fernet.decrypt(self.encrypted_url).decode()
+        encrypted_url = bytes(self.encrypted_url)
+        if encrypted_url:
+            return fernet.decrypt(encrypted_url).decode()
+        else:
+            return ""
 
     @stream_url.setter
     def stream_url(self, value: str) -> None:

@@ -6,23 +6,14 @@ from .models import Camera
 
 class CameraSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    stream_url = serializers.SerializerMethodField()
+    stream_url = serializers.CharField(
+        validators=[URLValidator(schemes=["rtsp", "http", "https", "rtmp", "ftp"])],
+    )
 
     class Meta:
         model = Camera
         exclude = ("encrypted_password", "encrypted_url")
-
-    def get_stream_url(self, obj: Camera) -> str:
-        """
-        Retrieve the decrypted stream_url for the response.
-
-        Args:
-            obj (Camera): The Camera instance.
-
-        Returns:
-            str: The decrypted stream_url.
-        """
-        return obj.stream_url
+        read_only_fields = ("user",)
 
     def create(self, validated_data: dict[str, Any]) -> Camera:
         password = validated_data.pop("password")
@@ -52,3 +43,9 @@ class CameraSerializer(serializers.ModelSerializer):
 class AuthenticationDetailsSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
+
+
+class AuthenticationDetail:
+    def __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password

@@ -3,7 +3,11 @@ from knox.auth import TokenAuthentication
 from rest_framework import generics, permissions, status, serializers
 from rest_framework.response import Response
 
-from .serializers import CameraSerializer, AuthenticationDetailsSerializer
+from .serializers import (
+    AuthenticationDetail,
+    CameraSerializer,
+    AuthenticationDetailsSerializer,
+)
 from .models import Camera
 
 
@@ -23,6 +27,7 @@ class CameraRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
     serializer_class = CameraSerializer
+    lookup_field = "id"
 
     def get_queryset(self):
         return Camera.objects.filter(user=self.request.user)
@@ -61,9 +66,8 @@ class CameraAuthenticationDetailsRetrieveView(generics.GenericAPIView):
                 {"message": "This user does not have access to this camera"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        serializer = AuthenticationDetailsSerializer(
-            username=camera.username, password=camera.password
-        )
+        data = AuthenticationDetail(username=camera.username, password=camera.password)
+        serializer = AuthenticationDetailsSerializer(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
