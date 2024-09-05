@@ -8,6 +8,7 @@ on:
       - '.gitignore'
       - '.dockerignore'
       - '.github/workflows/aws.yml'
+  workflow_dispatch:
 
 env:
   AWS_REGION: af-south-1
