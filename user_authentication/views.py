@@ -1,5 +1,6 @@
-import re
+from token import AWAIT
 from typing import List
+import boto3
 from django.contrib.auth import login
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -43,8 +44,12 @@ from ISPECO_Core.settings import (
     TWILIO_ACCOUNT_SID,
     TWILIO_AUTH_TOKEN,
     TWILIO_PHONE_NUMBER,
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY,
+    AWS_REGION,
 )
 from twilio.rest import Client
+from ISPECO_Core.sms_handler import SnsWrapper, logger
 
 
 class SendEmailOTPView(generics.GenericAPIView):
@@ -343,21 +348,37 @@ class UpdateUserView(generics.GenericAPIView):
         except OTP.DoesNotExist:
             OTP.objects.create(phone_number=phone_number, otp=otp)
 
-        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-        message = client.messages.create(
-            from_=TWILIO_PHONE_NUMBER,
-            to=str(phone_number),
-            body=f"Your OTP is {otp}",
+        client = boto3.client(
+            "sns",
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name=AWS_REGION,
         )
-        print(f"OTP sent to {phone_number} - {message.sid}")
-        validated_data["phone_number"] = str(phone_number)
-        return Response(
-            {
-                "data": validated_data,
-                "message": "OTP sent as text to phone number, verify to save data",
-            },
-            status=status.HTTP_200_OK,
-        )
+        sns_wrapper = SnsWrapper(client)
+        try:
+            # message = client.messages.create(
+            #     from_=TWILIO_PHONE_NUMBER,
+            #     to=str(phone_number),
+            #     body=f"Your OTP is {otp}",
+            # )
+            response = sns_wrapper.publish_text_message(
+                str(phone_number), f"Your OTP is {otp}"
+            )
+            logger.info(f"OTP sent to {phone_number} - {response.MessageId}")
+            # print(f"OTP sent to {phone_number} - {message.sid}")
+            validated_data["phone_number"] = str(phone_number)
+            return Response(
+                {
+                    "data": validated_data,
+                    "message": "OTP sent as text to phone number, verify to save data",
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            print(f"Error sending OTP: {e}")
+            return Response(
+                {"message": "Error sending OTP"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
     def handle_temp_data(self, user, validated_data) -> Response:
         phone_number = validated_data.get("phone_number")
