@@ -364,7 +364,7 @@ class UpdateUserView(generics.GenericAPIView):
             response = sns_wrapper.publish_text_message(
                 str(phone_number), f"Your OTP is {otp}"
             )
-            logger.info(f"OTP sent to {phone_number} - {response.MessageId}")
+            logger.info(f"OTP sent to {phone_number} - {response}")
             # print(f"OTP sent to {phone_number} - {message.sid}")
             validated_data["phone_number"] = str(phone_number)
             return Response(
@@ -375,7 +375,7 @@ class UpdateUserView(generics.GenericAPIView):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
-            print(f"Error sending OTP: {e}")
+            print(f"Error sending OTP: {str(e)}")
             return Response(
                 {"message": "Error sending OTP"}, status=status.HTTP_400_BAD_REQUEST
             )
