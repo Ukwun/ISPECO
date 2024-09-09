@@ -131,14 +131,12 @@ class PayPalClient:
             "Authorization": f"Bearer {access_token}",
         }
         if currency == "ZAR":
-            conversion_rate = Decimal("0.0561")  # Convert the float to Decimal
-            price = Decimal(price)
-            price = (price * conversion_rate).quantize(
-                Decimal("0.01"), rounding=ROUND_HALF_UP
-            )  # Convert to ZAR and round to 2 decimal places
-            setup_fee = (setup_fee * conversion_rate).quantize(
-                Decimal("0.01"), rounding=ROUND_HALF_UP
-            )  # Convert and round to 2 decimal places
+            conversion_rate = 0.0561  # Keep this as a float
+
+            price = round(
+                float(price) * conversion_rate, 2
+            )  # Convert to float and round to 2 decimal places
+            setup_fee = round(float(setup_fee) * conversion_rate, 2)
         billing_frequency = "MONTH" if billing_cycle == "monthly" else "YEAR"
         data = {
             "product_id": product_id,
@@ -186,13 +184,7 @@ class PayPalClient:
             "Authorization": f"Bearer {access_token}",
         }
         conversion_rate = Decimal("0.0561")  # Convert the float to Decimal
-        setup_fee = (
-            (setup_fee * conversion_rate).quantize(
-                Decimal("0.01"), rounding=ROUND_HALF_UP
-            )
-            if setup_fee is not None
-            else None
-        )
+        setup_fee = round(float(setup_fee) * conversion_rate, 2) if setup_fee else None
         # Create a dictionary of the optional parameters
         updates = {
             "/payment_preferences/setup_fee": (
