@@ -1,3 +1,4 @@
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Union, Optional
 import requests
 
@@ -130,12 +131,14 @@ class PayPalClient:
             "Authorization": f"Bearer {access_token}",
         }
         if currency == "ZAR":
-            price = round(
-                price * 0.0561, 2
-            )  # Convert to ZAR PayPal's internal currency
-            setup_fee = round(
-                setup_fee * 0.0561, 2
-            )  # Convert to ZAR PayPal's internal currency
+            conversion_rate = Decimal("0.0561")  # Convert the float to Decimal
+            price = Decimal(price)
+            price = (price * conversion_rate).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )  # Convert to ZAR and round to 2 decimal places
+            setup_fee = (setup_fee * conversion_rate).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )  # Convert and round to 2 decimal places
         billing_frequency = "MONTH" if billing_cycle == "monthly" else "YEAR"
         data = {
             "product_id": product_id,
@@ -182,7 +185,14 @@ class PayPalClient:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}",
         }
-        setup_fee = round(setup_fee * 0.0561, 2) if setup_fee is not None else None
+        conversion_rate = Decimal("0.0561")  # Convert the float to Decimal
+        setup_fee = (
+            (setup_fee * conversion_rate).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            if setup_fee is not None
+            else None
+        )
         # Create a dictionary of the optional parameters
         updates = {
             "/payment_preferences/setup_fee": (
