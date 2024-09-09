@@ -129,6 +129,13 @@ class PayPalClient:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}",
         }
+        if currency == "ZAR":
+            price = round(
+                price * 0.0561, 2
+            )  # Convert to ZAR PayPal's internal currency
+            setup_fee = round(
+                setup_fee * 0.0561, 2
+            )  # Convert to ZAR PayPal's internal currency
         billing_frequency = "MONTH" if billing_cycle == "monthly" else "YEAR"
         data = {
             "product_id": product_id,
@@ -175,7 +182,7 @@ class PayPalClient:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}",
         }
-
+        setup_fee = round(setup_fee * 0.0561, 2) if setup_fee is not None else None
         # Create a dictionary of the optional parameters
         updates = {
             "/payment_preferences/setup_fee": (

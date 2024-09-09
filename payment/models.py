@@ -63,7 +63,7 @@ class Plan(models.Model):
     paypal_plan_id = models.CharField(
         max_length=50, blank=True, null=True, editable=False
     )
-    currency = models.CharField(max_length=3, default="USD")
+    currency = models.CharField(max_length=3, default="ZAR")
     auto_renew = models.BooleanField(default=True)
 
     def __str__(self):
