@@ -29,7 +29,7 @@ class PayPalClient:
     def __init__(self):
         self.client_id = PAYPAL_CLIENT_ID
         self.secret = PAYPAL_SECRET
-        self.base_url = "https://api-m.sandbox.paypal.com"  # Use 'https://api-m.paypal.com' for production
+        self.base_url = "https://api-m.paypal.com"  # Use 'https://api-m.paypal.com' for production
 
     def get_access_token(self) -> str:
         """
