@@ -137,6 +137,7 @@ class PayPalClient:
                 float(price) * conversion_rate, 2
             )  # Convert to float and round to 2 decimal places
             setup_fee = round(float(setup_fee) * conversion_rate, 2)
+            currency = "USD"
         billing_frequency = "MONTH" if billing_cycle == "monthly" else "YEAR"
         data = {
             "product_id": product_id,
