@@ -36,3 +36,26 @@ class SnsWrapper:
             raise
         else:
             return message_id
+
+
+if __name__ == "__main__":
+    import os
+
+    import boto3
+
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_REGION = os.getenv("AWS_REGION", "af-south-1")
+
+    client_obj = boto3.client(
+        "sns",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        region_name=AWS_REGION,
+    )
+    sns_wrapper = SnsWrapper(client_obj)
+
+    response = sns_wrapper.publish_text_message(
+        "+2348142549489", f"Testing the SMS service"
+    )
+    print(response)
