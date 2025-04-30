@@ -1,56 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Stream</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera Stream</title>
 </head>
 <body>
-    <div id="video-container">
-        <img id="video-stream" src="#" alt="Camera Stream">
-    </div>
+  <div id="video-container">
+    <video id="video-stream" controls autoplay muted style="width: 100%; max-width: 800px;"></video>
+  </div>
 
-    {{ cam_id | json_script:'cameraID'}}
-    <script>
-        // Get the camera ID from the template context
-        const cameraID = JSON.parse(document.getElementById('cameraID').textContent);
-        const video = document.getElementById('video-stream');
+  {{ cam_id | json_script:'cameraID'}}
+  
+  <!-- hls.js for HLS streaming -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  
+  <script>
+    const cameraID = JSON.parse(document.getElementById('cameraID').textContent);
+    const video = document.getElementById('video-stream');
 
-        // WebSocket server URL
-        const wsUri = 'ws://' + window.location.host + '/ws/live_stream/' + cameraID + '/';
+    // Example HLS Stream URL (replace with your actual URL or backend logic)
+    const streamUrl = 'http://' + window.location.hostname + ':8000/live/' + cameraID + '.m3u8';
 
-        // Create a WebSocket connection
-        const socket = new WebSocket(wsUri);
-
-        // Handle WebSocket connection open event
-        socket.onopen = function(event) {
-            console.log('WebSocket connection established');
-        };
-
-        // Handle WebSocket message event (receive frames)
-        socket.onmessage = function(event) {
-            // Get the binary image data from the message
-            const imageData = event.data;
-
-            // Create a blob from the binary image data
-            const blob = new Blob([imageData], { type: 'image/jpeg' });
-
-            // Create a URL for the blob
-            const imageUrl = URL.createObjectURL(blob);
-
-            // Update the source of the image element
-            video.src = imageUrl;
-        };
-
-        // Handle WebSocket connection close event
-        socket.onclose = function(event) {
-            console.log('WebSocket connection closed');
-        };
-
-        // Handle WebSocket error event
-        socket.onerror = function(error) {
-            console.error('WebSocket error:', error);
-        };
-    </script>
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play();
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari native support
+      video.src = streamUrl;
+      video.addEventListener('loadedmetadata', function () {
+        video.play();
+      });
+    } else {
+      console.error('HLS not supported in this browser.');
+    }
+  </script>
 </body>
 </html>
